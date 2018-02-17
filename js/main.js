@@ -1,26 +1,41 @@
 
-$(document).ready(function(){
+// Copyright (c) 2018 muraak
+// 
+// This software is released under the MIT License.
+// https://opensource.org/licenses/MIT
 
-    var text = readTextFile("md/readme.md")
-    $("#main").html(marked(text));
+
+$(function()
+{
+    var md = readFileAsText("./md/readme.md");
+    $("#markdown").html(marked(md));
 });
 
-function readTextFile(file)
+function readFileAsText(filePath)
 {
-    var rawFile = new XMLHttpRequest();
-    var allText = null;
-    rawFile.open("GET", file, false);
-    rawFile.onreadystatechange = function ()
-    {
-        if(rawFile.readyState === 4)
-        {
-            if(rawFile.status === 200 || rawFile.status == 0)
-            {
-                allText = rawFile.responseText;
-            }
-        }
-    }
-    rawFile.send(null);
+    $.ajaxSetup({
+        xhr: function(){
+                if("ActiveXObject" in window) 
+                    return new ActiveXObject("Microsoft.XMLHTTP");
+                else 
+                    return new XMLHttpRequest();
+            },
+        async: false,
+    });
 
-    return allText;
+    var txt;
+    $.ajax({
+        type: 'get',
+        url: filePath,
+    }).done(function(data){
+        txt = data
+    }).error(function(data){
+        // for Firefox
+        if(data.readyState == 4 & data.status == 200)
+            txt = data.responseText;
+        else
+            txt = "This content failed to load.";
+    });
+
+    return txt;
 }
